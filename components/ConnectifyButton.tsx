@@ -1,6 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+/* import the file and use <Button>
+ * Provide backgroundColor, textColor, onPress attributes to the element
+ * Enclose text like <Button>Text</Button>
+ */
 const Button = ({ backgroundColor, textColor, onPress, children }) => {
   return (
     <Pressable 
