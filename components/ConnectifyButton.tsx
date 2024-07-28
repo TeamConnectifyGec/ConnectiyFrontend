@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 3,
     backgroundColor: '#A98CE6', // Default color
+    width: 150,
   },
   buttonText: {
     fontFamily: 'Inter',
