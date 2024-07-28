@@ -1,6 +1,6 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, Button } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
+// import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -11,9 +11,10 @@ export default function HomeScreen() {
       headerBackgroundColor={{ light: 'white', dark: '#1D3D47' }}
       >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Hola!</ThemedText>
-        <HelloWave />
+        <ThemedText type="title">Logo will go here</ThemedText>
       </ThemedView>
+      <Button style={styles.button} title='Log In'></Button>
+      <Button title='Sign Up'></Button>
     </ParallaxScrollView>
   );
 }
@@ -24,6 +25,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     textAlign: 'center',
+    paddingBottom: 20,
   },
   stepContainer: {
     gap: 8,
@@ -38,5 +40,10 @@ const styles = StyleSheet.create({
   },
   text:{
     textAlign: 'center',
+  },
+  button:{
+    height: 30,
+    width: 40,
+    borderCurve: 10,
   },
 });
