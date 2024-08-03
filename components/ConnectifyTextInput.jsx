@@ -1,18 +1,19 @@
 import React from 'react';
 import { View, StyleSheet, TextInput, TextInputProps } from 'react-native';
 
+/*
 // Define the props for the TextInput component
 interface CfyTextInputProps extends TextInputProps {
     placeholder: string;
     type?: 'email' | 'password' | 'username' | 'text'; // Add more types if needed
 }
-
+*/
 /* 
  * import the file and use <CfyTextImput>
  * Provide placeholder, value, onChangeText attributes to the element
  * if it is a password add secureTextEntry (it is false by default)
 */
-const CfyTextInput: React.FC<CfyTextInputProps> = ({
+const CfyTextInput = ({
     placeholder,
     value,
     onChangeText,
