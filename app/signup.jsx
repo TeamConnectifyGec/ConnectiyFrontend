@@ -1,18 +1,51 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View, Text } from "react-native";
-import Button from "@/components/ConnectifyButton"
-import CfyTextInput from '@/components/ConnectifyTextInput';
-import { Link } from "expo-router"
+import Button from "../components/ConnectifyButton";
+import CfyTextInput from '../components/ConnectifyTextInput';
+import ConnectifyAlert from '../components/ConnectifyAlert';
+import { Link } from "expo-router";
 
 const SignUp = () => {
-  const [email, setEmail] = useState();
-  const [username, setUsername] = useState();
-  const [recheckpassword, setRecheckPassword] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [recheckPassword, setRecheckPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const handleSignUp = () => {
+    if (!email) {
+      setAlertMessage('Please enter your email address');
+      setModalVisible(true);
+    } else if (!validateEmail(email)) {
+      setAlertMessage('Please enter a valid email address');
+      setModalVisible(true);
+    } else if (!username) {
+      setAlertMessage('Please enter a username');
+      setModalVisible(true);
+    } else if (!password || !recheckPassword) {
+      setAlertMessage('Please enter your password');
+      setModalVisible(true);
+    } else if (password !== recheckPassword) {
+      setAlertMessage('Passwords do not match');
+      setModalVisible(true);
+    } else {
+      // Simulate sending the form details
+      setAlertMessage('Sign up successful!');
+      setModalVisible(true);
+      // Here, you can add your API call to sign up the user
+    }
+  };
+
+  const validateEmail = (email) => {
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return regex.test(email);
+  };
+
   return (
     <View style={styles.background}>
       <View style={styles.logoContainer}>
-        <Image source={require("@/assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
+        <Image source={require("../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
       </View>
       <View>
         <CfyTextInput
@@ -34,25 +67,28 @@ const SignUp = () => {
         />
         <CfyTextInput
           placeholder="Re-enter password"
-          value={recheckpassword}
+          value={recheckPassword}
           onChangeText={setRecheckPassword}
           secureTextEntry
         />
         <View style={styles.buttonArea}>
-          <Text>(Capcha will come here)</Text>
-        </View>
-        <View style={styles.buttonArea}>
-          <Button backgroundColor='#A98CE6' textColor='white' onPress={() => { }}>
+          <Button backgroundColor='#A98CE6' textColor='white' onPress={handleSignUp}>
             Sign Up
           </Button>
         </View>
         <View style={styles.buttonArea}>
           <Text style={styles.text}>Already have an account?</Text>
-          <Link href='/login' style={{color: '#A98CE6',fontWeight: 'bold'}}>
+          <Link href='/login' style={{ color: '#A98CE6', fontWeight: 'bold' }}>
             Login
           </Link>
         </View>
       </View>
+      {/* Use ConnectifyAlert */}
+      <ConnectifyAlert 
+        visible={modalVisible} 
+        message={alertMessage} 
+        onClose={() => setModalVisible(false)} 
+      />
     </View>
   );
 }
@@ -66,7 +102,7 @@ const styles = StyleSheet.create({
   },
   buttonArea: {
     paddingTop: 10,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   logoContainer: {
     alignItems: 'center',
@@ -75,7 +111,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter',
     fontSize: 15,
     lineHeight: 21,
-    //fontWeight: 'bold',
     letterSpacing: 0.25,
     color: 'black',
   },

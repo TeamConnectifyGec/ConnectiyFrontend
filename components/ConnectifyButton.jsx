@@ -5,13 +5,13 @@ import { Pressable, StyleSheet, Text } from 'react-native';
  * Provide backgroundColor, textColor, onPress attributes to the element
  * Enclose text like <Button>Text</Button>
  */
-const Button = ({ backgroundColor, textColor, onPress, children }) => {
+const Button = ({ backgroundColor, textColor, onPress, children, width = 150 }) => {
   return (
     <Pressable 
       style={({ pressed }) => [
         styles.button, 
         { 
-          backgroundColor,
+          backgroundColor, width,
           elevation: pressed ? 1 : 3, // Simulate an inward click by reducing elevation
           transform: [{ scale: pressed ? 0.95 : 1 }] // Slightly scale down button when pressed
         }

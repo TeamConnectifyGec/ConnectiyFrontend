@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View, Text } from "react-native";
-import Button from "@/components/ConnectifyButton"
-import CfyTextInput from '@/components/ConnectifyTextInput';
+import Button from "../components/ConnectifyButton"
+import CfyTextInput from '../components/ConnectifyTextInput';
 import { Link } from "expo-router"
 
 const LogIn = () => {
@@ -10,7 +10,7 @@ const LogIn = () => {
   return (
     <View style={styles.background}>
       <View style={styles.logoContainer}>
-        <Image source={require("@/assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
+        <Image source={require("../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
       </View>
       <View>
         <CfyTextInput
@@ -28,6 +28,12 @@ const LogIn = () => {
           <Button backgroundColor='#A98CE6' textColor='white' onPress={() => { }}>
             Log In
           </Button>
+        </View>
+        <View style={styles.buttonArea}>
+          <Text style={styles.text}>Forgot your password?</Text>
+          <Link href="/forgotpass" style={{color: '#A98CE6', fontWeight: 'bold'}}>
+            Reset Password
+          </Link>
         </View>
         <View style={styles.buttonArea}>
           <Text style={styles.text}>Do not have an account?</Text>
