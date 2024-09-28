@@ -1,13 +1,13 @@
 import React from 'react';
-import { Image, StyleSheet, View, Text } from "react-native";
-import Button from "@/components/ConnectifyButton";
+import { Image, StyleSheet, View, Text} from "react-native";
+import Button from "../components/ConnectifyButton";
 import { Link } from 'expo-router'
 
 const Index = () => {
   return (
     <View style={styles.background}>
       <View style={styles.logoContainer}>
-        <Image source={require("@/assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
+        <Image source={require("../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
         <Text style={styles.text}>ConnectiFy</Text>
       </View>
       <View style={styles.buttonArea}>
