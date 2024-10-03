@@ -3,10 +3,45 @@ import { Image, StyleSheet, View, Text } from "react-native";
 import Button from "../components/ConnectifyButton"
 import CfyTextInput from '../components/ConnectifyTextInput';
 import { Link } from "expo-router"
+import ConnectifyAlert from '../components/ConnectifyAlert';
+import axios from 'axios';
 
 const LogIn = () => {
   const [username, extractUsername] = useState();
   const [password, extractPassword] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const handleServerResponse = async () => {
+    try {
+      const response = await axios.post(
+        "https://connectify-backend-seven.vercel.app/api/auth/login",{
+          username,
+          password
+        });
+
+      setAlertMessage(`Log In successfull!\nToken :${(await response).data.token}`);
+      setModalVisible(true);
+    }
+    catch(error) {
+      setAlertMessage(error.response.data.message || 'Log In failed!');
+      setModalVisible(true);
+    }
+  };
+
+  const handleLogIn = () => {
+    if (!username) {
+      setAlertMessage('Please enter a username');
+      setModalVisible(true);
+    } else if (!password) {
+      setAlertMessage('Please enter your password');
+      setModalVisible(true);
+    } 
+    else {
+      handleServerResponse();
+    }
+  };
+
   return (
     <View style={styles.background}>
       <View style={styles.logoContainer}>
@@ -25,7 +60,7 @@ const LogIn = () => {
           secureTextEntry
         />
         <View style={styles.buttonArea}>
-          <Button backgroundColor='#A98CE6' textColor='white' onPress={() => { }}>
+          <Button backgroundColor='#A98CE6' textColor='white' onPress={handleLogIn}>
             Log In
           </Button>
         </View>
@@ -42,6 +77,12 @@ const LogIn = () => {
           </Link>
         </View>
       </View>
+      {/* Use ConnectifyAlert */}
+      <ConnectifyAlert 
+        visible={modalVisible} 
+        message={alertMessage} 
+        onClose={() => setModalVisible(false)} 
+      />
     </View>
   );
 }

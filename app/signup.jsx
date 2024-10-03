@@ -4,7 +4,7 @@ import Button from "../components/ConnectifyButton";
 import CfyTextInput from '../components/ConnectifyTextInput';
 import ConnectifyAlert from '../components/ConnectifyAlert';
 import { Link } from "expo-router";
-//import axios from axios
+import axios from "axios"
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +13,24 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+
+  const handleServerResponse = async () => {
+    try {
+      const response = await axios.post(
+        "https://connectify-backend-seven.vercel.app/api/auth/signup",{
+          username,
+          email,
+          password
+        });
+
+      setAlertMessage(`Sign Up successfull!\nToken :${(await response).data.token}`);
+      setModalVisible(true);
+    }
+    catch(error) {
+      setAlertMessage(error.response.data.message || 'Sign up failed!');
+      setModalVisible(true);
+    }
+  };
 
   const handleSignUp = () => {
     if (!email) {
@@ -31,10 +49,7 @@ const SignUp = () => {
       setAlertMessage('Passwords do not match');
       setModalVisible(true);
     } else {
-      // Simulate sending the form details
-      setAlertMessage('Sign up successful!');
-      setModalVisible(true);
-      // Here, you can add your API call to sign up the user
+      handleServerResponse();
     }
   };
 
