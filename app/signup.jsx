@@ -4,6 +4,7 @@ import Button from "../components/ConnectifyButton";
 import CfyTextInput from '../components/ConnectifyTextInput';
 import ConnectifyAlert from '../components/ConnectifyAlert';
 import { Link } from "expo-router";
+//import axios from axios
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
