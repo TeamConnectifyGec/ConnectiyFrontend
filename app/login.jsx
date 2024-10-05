@@ -20,8 +20,11 @@ const LogIn = () => {
           password
         });
 
-      setAlertMessage(`Log In successfull!\nToken :${(await response).data.token}`);
+      const token = response.data.token;
+      setAlertMessage(`Log In successfull!`);
       setModalVisible(true);
+
+      // go ahead to the home/feed page after saving the token to main storage or someting
     }
     catch(error) {
       setAlertMessage(error.response.data.message || 'Log In failed!');

@@ -10,6 +10,16 @@ const ForgotPassword = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+  const handleServerResponse = async () => {
+    try {
+      
+    }
+    catch(error) {
+      setAlertMessage(error.response.data.message || 'Password Reset failed!');
+      setModalVisible(true);
+    }
+  };
+
   const handleForgotPassword = () => {
     if (!email) {
       setAlertMessage('Please enter your email address');
@@ -19,8 +29,7 @@ const ForgotPassword = () => {
       setModalVisible(true);
     } else {
       // Simulate sending email
-      setAlertMessage('A password reset link has been sent to your email');
-      setModalVisible(true);
+      handleServerResponse();
     }
   };
 

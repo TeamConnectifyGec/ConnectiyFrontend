@@ -23,12 +23,21 @@ const SignUp = () => {
           password
         });
 
-      setAlertMessage(`Sign Up successfull!\nToken :${(await response).data.token}`);
-      setModalVisible(true);
+        if(response.status === 200){
+          setAlertMessage(response.data.message);
+          setModalVisible(true); 
+        } else if(response.status === 201){
+          const token = response.data.token;
+          setAlertMessage(`Sign Up successfull!`);
+          setModalVisible(true); 
+
+          // we can move to the home/feed page after this is done
+          // save the token from the response data
+        }
     }
     catch(error) {
       setAlertMessage(error.response.data.message || 'Sign up failed!');
-      setModalVisible(true);
+      setModalVisible(true); 
     }
   };
 
