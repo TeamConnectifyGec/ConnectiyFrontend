@@ -17,7 +17,7 @@ const LogIn = () => {
       const response = await axios.post(
         "https://connectify-backend-seven.vercel.app/api/auth/login",{
           username,
-          password
+          password,
         });
 
       const token = response.data.token;
@@ -69,8 +69,8 @@ const LogIn = () => {
         </View>
         <View style={styles.buttonArea}>
           <Text style={styles.text}>Forgot your password?</Text>
-          <Link href="/forgotpass" style={{color: '#A98CE6', fontWeight: 'bold'}}>
-            Reset Password
+          <Link href="/forgot password" style={{color: '#A98CE6', fontWeight: 'bold'}}>
+            Forgot Password
           </Link>
         </View>
         <View style={styles.buttonArea}>
