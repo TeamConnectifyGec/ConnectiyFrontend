@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View, Text } from "react-native";
-import Button from "../components/ConnectifyButton";
-import CfyTextInput from '../components/ConnectifyTextInput';
-import ConnectifyAlert from '../components/ConnectifyAlert';
+import Button from "../../components/ConnectifyButton";
+import CfyTextInput from '../../components/ConnectifyTextInput';
+import ConnectifyAlert from '../../components/ConnectifyAlert';
 import { Link } from "expo-router";
 import axios from "axios"
+import { storeToken } from '../../utils/tokenStorage'; 
+import { useNavigation } from '@react-navigation/native'; // Import the navigation hook
+
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +16,7 @@ const SignUp = () => {
   const [password, setPassword] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const navigation = useNavigation(); // Initialize the navigation
 
   const handleServerResponse = async () => {
     try {
@@ -31,8 +35,11 @@ const SignUp = () => {
           setAlertMessage(`Sign Up successfull!`);
           setModalVisible(true); 
 
-          // we can move to the home/feed page after this is done
-          // save the token from the response data
+
+          await storeToken(token);
+
+          navigation.navigate('(home)'); // Navigate to the home screen
+
         }
     }
     catch(error) {
@@ -70,7 +77,7 @@ const SignUp = () => {
   return (
     <View style={styles.background}>
       <View style={styles.logoContainer}>
-        <Image source={require("../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
+        <Image source={require("../../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
       </View>
       <View>
         <CfyTextInput

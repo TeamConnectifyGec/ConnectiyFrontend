@@ -1,54 +1,37 @@
-import React from 'react';
-import { Image, StyleSheet, View, Text} from "react-native";
-import Button from "../components/ConnectifyButton";
-import { Link } from 'expo-router'
+import { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { getToken } from '../utils/tokenStorage'; // Adjust the path according to your file structure
 
-const Index = () => {
-  return (
-    <View style={styles.background}>
-      <View style={styles.logoContainer}>
-        <Image source={require("../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
-        <Text style={styles.text}>ConnectiFy</Text>
+export default function Index() {
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await getToken();
+      if (token) {
+        // Navigate to home if the token exists
+        router.replace('(home)'); 
+      } else {
+        // Navigate to auth if there is no token
+        router.replace('(auth)');
+      }
+      setIsLoading(false);
+    };
+
+    checkToken();
+  }, []);
+
+  if (isLoading) {
+    // Show a loading indicator while checking the token
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
-      <View style={styles.buttonArea}>
-        <Link href="/signup" asChild>
-          <Button backgroundColor='#A98CE6' textColor='white'>
-            Sign Up
-          </Button>
-        </Link>
-      </View>
-      <View style={styles.buttonArea}>
-      <Link href="/login" asChild>
-        <Button backgroundColor='#F0F1F1' textColor='black'>
-          Log In
-        </Button>
-        </Link>
-      </View>
-    </View>
-  );
+    );
+  }
+
+  // If you reach this point, it means the navigation has already happened
+  return null; // Prevent rendering anything after navigation
 }
-
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonArea: {
-    paddingTop: 15,
-  },
-  logoContainer: {
-    alignItems: 'center'
-  },
-  text: {
-    fontFamily: 'Inter',
-    fontSize: 20,
-    lineHeight: 21,
-    fontWeight: 'bold',
-    letterSpacing: 0.25,
-    color: 'black',
-  },
-});
-
-export default Index;

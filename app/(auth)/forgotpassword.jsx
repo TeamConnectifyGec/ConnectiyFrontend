@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View, Text } from "react-native";
-import Button from '../components/ConnectifyButton';
-import CfyTextInput from '../components/ConnectifyTextInput';
+import Button from '../../components/ConnectifyButton';
+import CfyTextInput from '../../components/ConnectifyTextInput';
 import { Link } from 'expo-router';
-import ConnectifyAlert from '../components/ConnectifyAlert';
+import ConnectifyAlert from '../../components/ConnectifyAlert';
 import axios from 'axios';
 
 const ForgotPassword = () => {
@@ -52,7 +52,7 @@ const ForgotPassword = () => {
     <View style={styles.background}>
       <View style={styles.logoContainer}>
         <Image 
-          source={require('../assets/images/connectify-logo.png')} 
+          source={require('../../assets/images/connectify-logo.png')} 
           style={styles.logo} 
         />
       </View>

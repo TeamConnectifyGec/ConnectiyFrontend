@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View, Text } from "react-native";
-import Button from "../components/ConnectifyButton"
-import CfyTextInput from '../components/ConnectifyTextInput';
+import Button from "../../components/ConnectifyButton"
+import CfyTextInput from '../../components/ConnectifyTextInput';
 import { Link } from "expo-router"
-import ConnectifyAlert from '../components/ConnectifyAlert';
+import ConnectifyAlert from '../../components/ConnectifyAlert';
 import axios from 'axios';
+import { storeToken } from '../../utils/tokenStorage'; // Adjust the path as needed
+import { useNavigation } from '@react-navigation/native'; // Import the navigation hook
+
 
 const LogIn = () => {
   const [username, extractUsername] = useState();
   const [password, extractPassword] = useState();
   const [modalVisible, setModalVisible] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const navigation = useNavigation(); // Initialize the navigation
 
   const handleServerResponse = async () => {
     try {
@@ -24,7 +28,10 @@ const LogIn = () => {
       setAlertMessage(`Log In successfull!`);
       setModalVisible(true);
 
-      // go ahead to the home/feed page after saving the token to main storage or someting
+      await storeToken(token);
+
+      navigation.navigate('(home)'); // Navigate to the home screen
+
     }
     catch(error) {
       setAlertMessage(error.response.data.message || 'Log In failed!');
@@ -48,7 +55,7 @@ const LogIn = () => {
   return (
     <View style={styles.background}>
       <View style={styles.logoContainer}>
-        <Image source={require("../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
+        <Image source={require("../../assets/images/connectify-logo.png")} style={{ width: 120, height: 120 }} />
       </View>
       <View>
         <CfyTextInput
@@ -69,7 +76,7 @@ const LogIn = () => {
         </View>
         <View style={styles.buttonArea}>
           <Text style={styles.text}>Forgot your password?</Text>
-          <Link href="/forgot password" style={{color: '#A98CE6', fontWeight: 'bold'}}>
+          <Link href="/forgotpassword" style={{color: '#A98CE6', fontWeight: 'bold'}}>
             Forgot Password
           </Link>
         </View>
