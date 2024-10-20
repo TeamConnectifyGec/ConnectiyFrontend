@@ -1,7 +1,7 @@
 // File: ProfileScreen.js
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions, ScrollView } from 'react-native';
 import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
@@ -15,7 +15,7 @@ const ProfileScreen = () => {
   // Fetch profile data from API
   const fetchProfile = async () => {
     try {
-      const response = await axios.get('https://api.example.com/profile'); // Replace with your API
+      const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/profile'); // Replace with your API
       setProfile(response.data);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -68,7 +68,7 @@ const ProfileScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Profile Section */}
       {loading ? (
         <ActivityIndicator size="large" color="#A98CE6" style={styles.loader} />
@@ -78,10 +78,10 @@ const ProfileScreen = () => {
             <Image source={{ uri: profile.profilePic }} style={styles.profilePic} />
             <View style={styles.connectionStats}>
               <View style={styles.statBox}>
-                <Text style={styles.statText}>Connections {profile.connections}</Text>
+                <Text style={styles.statText}>Connections{profile.connections}</Text>
               </View>
               <View style={styles.statBox}>
-                <Text style={styles.statText}>Communities {profile.communities}</Text>
+                <Text style={styles.statText}>Communities{profile.communities}</Text>
               </View>
             </View>
             <Text style={styles.profileName}>{profile.name}</Text>
@@ -122,7 +122,7 @@ const ProfileScreen = () => {
           </View>
         )
       )}
-    </View>
+    </ScrollView>
   );
 };
 
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
   },
   statBox: {
     backgroundColor: '#E0E0E0',
+    borderColor: 'black',
     borderRadius: 10,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -170,6 +171,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    width: 'auto',
   },
   statText: {
     fontSize: 14,
