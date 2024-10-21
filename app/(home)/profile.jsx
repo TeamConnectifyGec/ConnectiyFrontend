@@ -15,7 +15,19 @@ const ProfileScreen = () => {
   // Fetch profile data from API
   const fetchProfile = async () => {
     try {
-      const response = await axios.get('https://api.example.com/profile'); // Replace with your API
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Add the token in the Authorization header
+          'Content-Type': 'multipart/form-data', // If you are sending an image or form-data
+        },
+      };
+  
+      const response = await axios.put(
+        'https://connectify-backend-seven.vercel.app/api/user/profile',  // Your API endpoint
+        userData,     // Data being sent, e.g., user fields, profile image, etc.
+        config        // Config including the headers
+      );
+      //const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/profile'); // Replace with your API
       setProfile(response.data);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -84,10 +96,10 @@ const ProfileScreen = () => {
                 <Text style={styles.statText}>Communities {profile.communities}</Text>
               </View>
             </View>
-            <Text style={styles.profileName}>{profile.name}</Text>
+            <Text style={styles.profileName}>{profile.username}</Text>
           </View>
           <Text style={styles.aboutTitle}>About</Text>
-          <Text style={styles.aboutText}>{profile.about}</Text>
+          <Text style={styles.aboutText}>{profile.bio}</Text>
         </View>
       )}
 
