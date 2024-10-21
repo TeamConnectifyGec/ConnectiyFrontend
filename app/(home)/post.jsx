@@ -1,7 +1,5 @@
-// File: PostInputScreen.js
-
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -9,6 +7,18 @@ const PostInputScreen = () => {
   const [title, setTitle] = useState('');
   const [postContent, setPostContent] = useState('');
   const [image, setImage] = useState(null);
+  const [tags, setTags] = useState([]);
+
+  // Function to extract hashtags
+  const extractHashtags = (content) => {
+    const regex = /#(\w+)/g;  // This matches words after '#'
+    const extractedTags = [];
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      extractedTags.push(match[1]);
+    }
+    return extractedTags;
+  };
 
   // Pick an image from the gallery
   const pickImage = async () => {
@@ -21,6 +31,44 @@ const PostInputScreen = () => {
 
     if (!result.canceled) {
       setImage(result.uri);
+    }
+  };
+
+  // Function to handle form submission
+  const handleSubmit = async () => {
+    const extractedTags = extractHashtags(postContent);
+    setTags(extractedTags);
+
+    // Create the post object
+    const postData = {
+      title,
+      content: postContent,
+      tags: extractedTags,
+      image,  // Assuming you'll send the image URI and handle it in the backend
+    };
+
+    try {
+      const response = await fetch('http://<your-backend-url>/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (response.ok) {
+        Alert.alert('Success', 'Your post has been submitted!');
+        // Clear inputs after success
+        setTitle('');
+        setPostContent('');
+        setImage(null);
+        setTags([]);
+      } else {
+        throw new Error('Failed to submit post');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'There was an error submitting your post.');
     }
   };
 
@@ -44,9 +92,6 @@ const PostInputScreen = () => {
         <View style={styles.divider} />
 
         {/* Post Content Section */}
-        {/*<View style={styles.menuHeading}>
-          <Text style={styles.subHeadingText}></Text>
-        </View>*/}
         <TextInput
           style={styles.textInput}
           multiline
@@ -70,7 +115,7 @@ const PostInputScreen = () => {
       )}
       {/* Submit Button */}
       <View style={styles.submitView}>
-        <TouchableOpacity style={styles.submitButton}>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <View style={styles.submitButtonInner}>
             <Ionicons name="send" size={30} color="#FFFFFF" />
           </View>
@@ -84,11 +129,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    padding: 16, // Added padding to the ScrollView
+    padding: 16,
   },
   postFrame: {
     width: '100%',
-    //padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FEFFFF',
@@ -127,7 +171,6 @@ const styles = StyleSheet.create({
     width: '95%',
     borderBottomWidth: 1,
     borderBottomColor: 'black',
-    //marginVertical: 16,
   },
   titleInput: {
     width: '100%',
@@ -143,7 +186,6 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     borderWidth: 1,
     color: '#000',
-    //marginBottom: 16,
   },
   textInput: {
     width: '100%',
@@ -161,7 +203,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: '#000',
     lineHeight: 22,
-    //marginBottom: 20,
   },
   imageUploadButton: {
     backgroundColor: 'transparent',
