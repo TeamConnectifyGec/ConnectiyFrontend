@@ -1,17 +1,23 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
-const Community = ({ community }) => {
+const CommunityComponent = ({ community }) => {
     const handleJoinPress = () => {
         // Handle join button press
         console.log('Join button pressed');
     };
 
+    let data = community && community.community ? community.community : null;
+
+    if (!data) {
+        data = community
+    }
     return (
         <View style={styles.communityContainer}>
             <View style={styles.communityInfo}>
-                <Text style={styles.communityName}>{community.name}</Text>
-                <Text style={styles.memberCount}>{community.members} members</Text>
+                <Text style={styles.communityName}>{data.community_name}</Text>
+                <Text style={styles.memberCount}>{data.description}</Text>
+                <Text style={styles.memberCount}>{data.member_count} {data.member_count > 1 ? 'members' : 'member'}</Text>
             </View>
             <Pressable style={styles.joinButton} onPress={handleJoinPress}>
                 <Text style={styles.joinText}>Join</Text>
@@ -47,7 +53,7 @@ const styles = StyleSheet.create({
         color: '#6c757d',
     },
     joinButton: {
-        backgroundColor: '#4a90e2',
+        backgroundColor: '#A98CE6',
         borderRadius: 5,
         paddingVertical: 5,
         paddingHorizontal: 10,
@@ -58,4 +64,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Community;
+export default CommunityComponent;

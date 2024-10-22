@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 
-const User = ({ user }) => {
+const UserComponent = ({ user }) => {
     const handleFollowPress = () => {
         // Handle follow button press
         console.log('Follow button pressed');
@@ -11,7 +11,7 @@ const User = ({ user }) => {
         <View style={styles.userContainer}>
             <Image
                 style={styles.profilePic}
-                source={{ uri: user.pfp_link || 'default_profile_pic_url' }}
+                source={{ uri: user.pfp_link || 'https://via.placeholder.com/40' }}
             />
             <Text style={styles.username}>{user.username || 'Unknown User'}</Text>
             <Pressable style={styles.followButton} onPress={handleFollowPress}>
@@ -40,22 +40,24 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
         marginRight: 10,
+        backgroundColor: '#d5d3d3',
     },
     username: {
         fontWeight: 'bold',
         fontSize: 16,
         flex: 1,
+        marginLeft:8,
     },
     followButton: {
-        backgroundColor: '#4a90e2',
+        backgroundColor: '#A98CE6',
         borderRadius: 5,
         paddingVertical: 5,
         paddingHorizontal: 10,
     },
     followText: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: 16,
     },
 });
 
-export default User;
+export default UserComponent;

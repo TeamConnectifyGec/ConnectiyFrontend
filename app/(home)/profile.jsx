@@ -65,7 +65,7 @@ const ProfileScreen = () => {
         };
         const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/connections/count',config); 
 
-        setConnections(response.data.connectionCount);
+        setConnections(response.data.count);
         console.log(connections);
         
       } catch(error){
@@ -81,7 +81,7 @@ const ProfileScreen = () => {
         };
         const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/communities/count',config); 
 
-        setCommunities(response.data.communitiesCount);
+        setCommunities(response.data.count);
       } catch(error){
         console.error('Error fetching user communities count:', error);
       }
