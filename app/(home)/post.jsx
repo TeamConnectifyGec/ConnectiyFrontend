@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import {getToken} from '../../utils/tokenStorage'
+import axios from 'axios';
 
 const PostInputScreen = () => {
   const [title, setTitle] = useState('');
@@ -25,15 +27,31 @@ const PostInputScreen = () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1],
       quality: 1,
     });
 
     if (!result.canceled) {
-      setImage(result.uri);
+      setImage(result.assets[0]);
     }
   };
 
+  const getImageType = (uri) => {
+    const extension = uri.split('.').pop();
+    let type = '';
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        type = 'image/jpeg';
+        break;
+      case 'png':
+        type = 'image/png';
+        break;
+      default:
+        type = 'application/octet-stream'; // Fallback if extension is unknown
+    }
+    return type;
+  };
+  
   // Function to handle form submission
   const handleSubmit = async () => {
     const extractedTags = extractHashtags(postContent);
@@ -41,31 +59,43 @@ const PostInputScreen = () => {
 
     // Create the post object
     const postData = {
-      title,
-      content: postContent,
-      tags: extractedTags,
-      image,  // Assuming you'll send the image URI and handle it in the backend
+      post_title: title,
+      post_content: postContent,
+      post_hashes: tags,
     };
 
     try {
-      const response = await fetch('http://<your-backend-url>/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
-      });
+      const token = await getToken();    
+      const formData = new FormData();
+      if(image){
+        const imageType = getImageType(image.uri);
+        formData.append('file', {
+          uri: image.uri,
+          name: `photo.${image.uri.split('.').pop()}`,
+          type: imageType
+        });
+      }  
+      formData.append('folder', 'post_images');
+      formData.append('post_title', postData.post_title);
+      formData.append('post_content',postData.post_content);
+      formData.append('post_hashes',postData.post_hashes);
 
-      if (response.ok) {
-        Alert.alert('Success', 'Your post has been submitted!');
-        // Clear inputs after success
-        setTitle('');
-        setPostContent('');
-        setImage(null);
-        setTags([]);
-      } else {
-        throw new Error('Failed to submit post');
-      }
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+     
+      const response = await axios.post('https://connectify-backend-seven.vercel.app/api/user/create-post',formData ,config );
+
+      Alert.alert('Success', 'Your post has been submitted!');
+      //Clear inputs after success
+      setTitle('');
+      setPostContent('');
+      setImage(null);
+      setTags([]);
+
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'There was an error submitting your post.');
@@ -111,7 +141,7 @@ const PostInputScreen = () => {
 
       {/* Display selected image */}
       {image && (
-        <Image source={{ uri: image }} style={styles.imagePreview} />
+        <Image source={{ uri: image.uri }} style={styles.imagePreview} />
       )}
       {/* Submit Button */}
       <View style={styles.submitView}>
@@ -161,7 +191,6 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   subHeadingText: {
-    fontFamily: 'Inter',
     fontSize: 16,
     fontWeight: '400',
     lineHeight: 22,
@@ -182,7 +211,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     padding: 12,
     fontSize: 16,
-    fontFamily: 'Inter',
     borderColor: '#E0E0E0',
     borderWidth: 1,
     color: '#000',
@@ -198,7 +226,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     padding: 16,
     fontSize: 16,
-    fontFamily: 'Inter',
     borderColor: '#E0E0E0',
     borderWidth: 1,
     color: '#000',

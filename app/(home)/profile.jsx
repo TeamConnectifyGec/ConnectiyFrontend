@@ -17,7 +17,9 @@ import {
 import { Icon } from 'react-native-elements';
 import axios from 'axios';
 import { launchImageLibrary } from 'react-native-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 import moment from 'moment/moment';
+import { launchImageLibraryAsync } from 'expo-image-picker';
 
 const ProfileScreen = () => {
   const [userData, setUserData] = useState({
@@ -102,24 +104,51 @@ const ProfileScreen = () => {
 
   const handleProfilePictureChange = async () => {
     const options = {
-      mediaType: 'photo',
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
       quality: 1,
     };
+    
+    const getImageType = (uri) => {
+      const extension = uri.split('.').pop();
+      let type = '';
+      switch (extension) {
+        case 'jpg':
+        case 'jpeg':
+          type = 'image/jpeg';
+          break;
+        case 'png':
+          type = 'image/png';
+          break;
+        default:
+          type = 'application/octet-stream'; // Fallback if extension is unknown
+      }
+      return type;
+    };
 
-    launchImageLibrary(options, async (response) => {
-      if (response.didCancel) {
+    const pickImage = async () => {
+      let result = await ImagePicker.launchImageLibraryAsync(options);
+
+      if (result.didCancel) {
         console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
+      } else if (result.error) {
+        console.log('ImagePicker Error: ', result.error);
       } else {
-        const uri = response.assets[0].uri;
-        setUserData({ ...userData, profilePicture: uri });
-
-        // Update the server with the new profile picture
+        const uri = result.assets[0].uri;
         try {
+
           const token = await getToken();    
+          
           const formData = new FormData();
-          formData.append('file', uri);  // imageFile is the file you're uploading
+
+          const imageType = getImageType(uri);
+          formData.append('file', {
+            uri: uri,
+            name: `photo.${uri.split('.').pop()}`,
+            type: imageType
+          }); 
+          
           formData.append('folder', 'pfp');
 
           const config = {
@@ -129,13 +158,18 @@ const ProfileScreen = () => {
             },
           };
 
-          await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile',formData ,config );
+          const response = await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile',formData ,config );
+
+          setUserData({ ...userData, pfp_link: response.data.pfp_link });
+
           Alert.alert('Success', 'Profile picture updated successfully');
         } catch (error) {
           console.error('Error updating profile picture:', error);
         }
       }
-    });
+    };
+    await pickImage();
+
   };
 
   const handleNameUpdate = async () => {
@@ -326,7 +360,7 @@ const ProfileScreen = () => {
         </View>
         <View style={{flex:1}}>
           {
-          <View>
+          <View >
             {selectedTab === 'Posts' && (
               <FlatList
                 data={posts}
