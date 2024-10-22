@@ -16,10 +16,8 @@ import {
 } from 'react-native';
 import { Icon } from 'react-native-elements';
 import axios from 'axios';
-import { launchImageLibrary } from 'react-native-image-picker';
 import * as ImagePicker from 'expo-image-picker';
 import moment from 'moment/moment';
-import { launchImageLibraryAsync } from 'expo-image-picker';
 
 const ProfileScreen = () => {
   const [userData, setUserData] = useState({
@@ -30,7 +28,8 @@ const ProfileScreen = () => {
     email: '',
     _id: '',
   });
-
+  const [connections, setConnections] = useState(0);
+  const [communities, setCommunities] = useState(0);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [editedName, setEditedName] = useState('');
@@ -42,10 +41,8 @@ const ProfileScreen = () => {
   // Fetch user data from the server
   useEffect(() => {
     const fetchData = async () => {
-      
+      const token = await getToken();
       try {
-        const token = await getToken();
-
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,6 +54,36 @@ const ProfileScreen = () => {
         setEditedBio(response.data.bio);
       } catch (error) {
         console.error('Error fetching user data:', error);
+      }
+
+      try{
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/connections/count',config); 
+
+        setConnections(response.data.connectionCount);
+        console.log(connections);
+        
+      } catch(error){
+        console.error('Error fetching user connections count:', error);
+      }
+      
+      try{
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/communities/count',config); 
+
+        setCommunities(response.data.communitiesCount);
+      } catch(error){
+        console.error('Error fetching user communities count:', error);
       }
     };
     fetchData();
@@ -301,11 +328,11 @@ const ProfileScreen = () => {
             </TouchableOpacity>
             <View style={styles.statsContainer}>
               <View style={styles.stat}>
-                <Text style={styles.statValue}>{userData.connections}</Text>
+                <Text style={styles.statValue}>{connections}</Text>
                 <Text style={styles.statLabel}>Connections</Text>
               </View>
               <View style={styles.stat}>
-                <Text style={styles.statValue}>{userData.communities}</Text>
+                <Text style={styles.statValue}>{communities}</Text>
                 <Text style={styles.statLabel}>Communities</Text>
               </View>
             </View>

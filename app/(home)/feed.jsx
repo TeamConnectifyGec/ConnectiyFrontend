@@ -1,75 +1,117 @@
-import React from 'react';
-import { View, Text, Image, TextInput, StyleSheet, Pressable } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+    Pressable,
+    FlatList,
+    Image
+} from 'react-native';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const FeedScreen = () => {
-    const router = useRouter();
-    
-    // Updated function to navigate back
-    const handleCommentPress = () => {
-        // Navigate back to the previous page
-        router.back();
+const Feed = () => {
+    const [isSearching, setIsSearching] = useState(false);
+    const [activeTab, setActiveTab] = useState('posts');
+    const [data, setData] = useState([]);
+    const [searchText, setSearchText] = useState('');
+
+
+    // Function to handle search focus
+    const handleSearchFocus = () => {
+        setIsSearching(true);
     };
+
+    // Function to handle back navigation
+    const handleBackPress = () => {
+        setIsSearching(false);
+        setData([]); // Clear the search results
+    };
+
+    // Function to handle tab selection
+    const handleTabPress = (tab) => {
+        setActiveTab(tab);
+        fetchTabData(tab);
+    };
+
+    // Function to fetch data based on active tab
+    const fetchTabData = (tab) => {
+        // Replace with your server URL and fetch logic
+        const url = `https://your-server-url.com/api/${tab}`;
+
+        fetch(url)
+            .then((response) => response.json())
+            .then((result) => setData(result))
+            .catch((error) => console.error('Error fetching data:', error));
+    };
+
+    // Render each item in the FlatList
+    const renderItem = ({ item }) => (
+        <View style={styles.itemContainer}>
+            {/* Customize based on your data structure */}
+            <Text style={styles.itemTitle}>{item.title || item.name}</Text>
+        </View>
+    );
 
     return (
         <View style={styles.container}>
-            {/* Header with Search Bar */}
             <View style={styles.header}>
-                <Text style={styles.title}>Connectify</Text>
-                
-                <View style={styles.icon1}>
-                    <Pressable>
-                        <FontAwesome5 name="bars" size={24} />
+                {isSearching ? (
+                    // Back button when searching
+                    <Pressable onPress={handleBackPress} style={styles.backButton}>
+                        <FontAwesome5 name="arrow-left" size={24} />
                     </Pressable>
-                </View>
+                ) : (
+                    // Normal header view
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>Connectify</Text>
+                        <View style={styles.icon1}>
+                            <Pressable>
+                                <FontAwesome5 name="bars" size={24} />
+                            </Pressable>
+                        </View>
+                    </View>
+                )}
                 <TextInput
                     style={styles.searchBar}
                     placeholder="Search"
                     placeholderTextColor="#000000"
+                    onFocus={handleSearchFocus}
                 />
             </View>
 
-            <View style={styles.feed}>
-                <View style={styles.profileSection}>
-                    <Image
-                        style={styles.profilePic}
-                        source={{ uri: 'your_profile_pic_url' }}
-                    />
-                    <Text style={styles.profileName}>Boomer</Text>
-                    <Pressable style={styles.tindot}>
-                        <FontAwesome5 name="ellipsis-v" size={24} />
+            {isSearching && (
+                // Tabs for the search view
+                <View style={styles.tabContainer}>
+                    <Pressable
+                        style={[styles.tab, activeTab === 'posts' && styles.activeTab]}
+                        onPress={() => handleTabPress('posts')}
+                    >
+                        <Text style={styles.tabText}>Posts</Text>
                     </Pressable>
-                    <Text style={styles.postDate}>27 Mar 2024 7:30 PM</Text>
+                    <Pressable
+                        style={[styles.tab, activeTab === 'users' && styles.activeTab]}
+                        onPress={() => handleTabPress('users')}
+                    >
+                        <Text style={styles.tabText}>Users</Text>
+                    </Pressable>
+                    <Pressable
+                        style={[styles.tab, activeTab === 'communities' && styles.activeTab]}
+                        onPress={() => handleTabPress('communities')}
+                    >
+                        <Text style={styles.tabText}>Communities</Text>
+                    </Pressable>
                 </View>
+            )}
 
-                <View style={styles.postFrame}>
-                    <Text style={styles.postTitle}>Should Football Be a Bigger Part of the Olympics?</Text>
-                    <Text style={styles.postContent}>
-                        Football is the world’s most popular sport, yet it often feels like an afterthought at the Olympics...
-                    </Text>
-
-                    <View style={styles.interactionSection}>
-                        <Text style={styles.likes}>
-                            <Pressable style={styles.tindot}>
-                                <FontAwesome5 name="thumbs-up" size={24} />
-                            </Pressable>
-                            33K
-                        </Text>
-                        <Text style={styles.comments}>
-                            <Pressable style={styles.tindot} onPress={handleCommentPress}>
-                                <FontAwesome5 name="comments" size={24} />
-                            </Pressable>
-                            11K
-                        </Text>
-                        <Text style={styles.shares}>
-                            <Pressable style={styles.tindot}>
-                                <FontAwesome5 name="share-alt" size={24} />
-                            </Pressable>
-                        </Text>
-                    </View>
-                </View>
-            </View>
+            <FlatList
+                data={data}
+                keyExtractor={(item, _id) => _id}
+                renderItem={renderItem}
+                contentContainerStyle={styles.flatListContent}
+                ListEmptyComponent={<Text style={styles.noDataText}>No results found.</Text>}
+                onChangeText={text => setSearchText(text)} 
+            />
         </View>
     );
 };
@@ -79,128 +121,75 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
         flex: 1,
         backgroundColor: '#F5F5F5',
-        padding: 16,
-    },
-    feed: {
-        backgroundColor: "#ffffff",
-        flex: 1,
-        position: 'relative',
-        top: 70,
-        borderRadius: 20,
-        borderWidth: 1,
-        maxHeight: 450
-    },
-    icon1: {
-        position: 'relative',
-        left: 190,
-        top: -15
-    },
-    tindot: {
-        position: 'relative',
-        top: -42,
-        left: 190,
+        padding: 0,
     },
     header: {
+        backgroundColor: '#ffffff',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderColor: '#D9D9D9',
+    },
+    titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#ffffff',
-        flex: 1,
-        margin: -50,
-        marginLeft: -20,
-        padding: 10,
-        marginRight: -20,
-        maxHeight: 150,
-        borderWidth: 1,
+        marginBottom: 10,
     },
     title: {
         fontSize: 25,
         fontWeight: 'bold',
-        marginTop: -30,
-        marginLeft: 20
+    },
+    icon1: {
+        marginLeft: 10,
     },
     searchBar: {
         height: 40,
         backgroundColor: '#D9D9D9',
         borderRadius: 15,
-        marginTop: -30,
         paddingHorizontal: 10,
         fontSize: 15,
-        position: 'relative',
-        right: 140,
-        width: 330,
-        marginBottom: -100
     },
-    profileSection: {
-        position: 'absolute',
-        left: 13,
-        top: 75,
+    backButton: {
+        marginBottom: 10,
+    },
+    tabContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
+        justifyContent: 'space-around',
+        backgroundColor: '#ffffff',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderColor: '#D9D9D9',
     },
-    profilePic: {
-        width: 40,
-        height: 40,
-        borderRadius: 19.5,
-        borderWidth: 1,
-        marginTop: -80,
-        marginLeft: 10,
-        borderColor: '#A98CE6',
-    },
-    profileName: {
-        marginLeft: 15,
-        fontSize: 15,
-        fontWeight: '500',
-        marginTop: -85,
-        color: '#000000',
-    },
-    postDate: {
-        fontSize: 8,
-        color: '#000000',
-        position: 'absolute',
-        right: -190,
-        top: 0,
-    },
-    postFrame: {
-        position: 'absolute',
-        top: 100,
-        left: 13,
-        width: 329,
-        height: 300,
-        backgroundColor: '#FEFFFF',
-        borderRadius: 10,
-        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.25)',
+    tab: {
         padding: 10,
     },
-    postTitle: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#000000',
-        marginBottom: 8,
+    activeTab: {
+        borderBottomWidth: 2,
+        borderColor: '#000000',
     },
-    postContent: {
-        fontSize: 12,
-        color: '#000000',
-        marginBottom: 16,
+    tabText: {
+        fontSize: 16,
+        fontWeight: '500',
     },
-    interactionSection: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        position: 'relative',
-        bottom: -200,
+    flatListContent: {
+        paddingVertical: 10,
     },
-    likes: {
-        fontSize: 15,
-        color: '#000000',
+    itemContainer: {
+        padding: 15,
+        backgroundColor: '#ffffff',
+        marginVertical: 5,
+        borderRadius: 10,
     },
-    comments: {
-        fontSize: 15,
-        color: '#000000',
+    itemTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
     },
-    shares: {
-        fontSize: 15,
-        color: '#000000',
+    noDataText: {
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: 16,
+        color: '#888888',
     },
 });
 
-export default FeedScreen;
+export default Feed;
