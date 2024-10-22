@@ -1,306 +1,533 @@
 // File: ProfileScreen.js
-
+import { getToken } from '../../utils/tokenStorage'; 
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Alert,  
+  FlatList,
+  ScrollView,
+} from 'react-native';
+import { Icon } from 'react-native-elements';
 import axios from 'axios';
-
-const { width, height } = Dimensions.get('window');
+import { launchImageLibrary } from 'react-native-image-picker';
+import moment from 'moment/moment';
 
 const ProfileScreen = () => {
+  const [userData, setUserData] = useState({
+    pfp_link: '',
+    username: '',
+    name: '',
+    bio: '',
+    email: '',
+    _id: '',
+  });
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [editedBio, setEditedBio] = useState('');
+  const [selectedTab, setSelectedTab] = useState('Posts'); 
   const [posts, setPosts] = useState([]);
-  const [profile, setProfile] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('Posts');
+  const [comments, setComments] = useState([]);
 
-  // Fetch profile data from API
-  const fetchProfile = async () => {
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,  // Add the token in the Authorization header
-          'Content-Type': 'multipart/form-data', // If you are sending an image or form-data
-        },
-      };
-  
-      const response = await axios.put(
-        'https://connectify-backend-seven.vercel.app/api/user/profile',  // Your API endpoint
-        userData,     // Data being sent, e.g., user fields, profile image, etc.
-        config        // Config including the headers
-      );
-      //const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/profile'); // Replace with your API
-      setProfile(response.data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  // Fetch posts from API
-  const fetchPosts = async () => {
-    try {
-      const response = await axios.get('https://api.example.com/posts'); // Replace with your API
-      setPosts(response.data);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    }
-  };
-
+  // Fetch user data from the server
   useEffect(() => {
     const fetchData = async () => {
-      await fetchProfile();
-      await fetchPosts();
-      setLoading(false);
+      
+      try {
+        const token = await getToken();
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/profile',config); // Replace with your API endpoint
+        setUserData(response.data);
+        setEditedName(response.data.name || ''); // Set default if actualName is not available
+        setEditedBio(response.data.bio);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
     };
     fetchData();
   }, []);
 
-  const renderPost = ({ item }) => (
-    <View style={styles.postContainer}>
-      <Text style={styles.postDate}>{item.date}</Text>
-      <View style={styles.tagContainer}>
-        {item.tags.map((tag, index) => (
-          <View key={index} style={styles.tag}>
-            <Text style={styles.tagText}>{tag}</Text>
-          </View>
-        ))}
+  useEffect(() => {
+
+    const fetchPosts = async () => {
+      try {
+        const token = await getToken();
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/posts', config);
+        setPosts(response.data.posts);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const token = await getToken();
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/comments', config);
+        setComments(response.data.comments);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    };
+    if (selectedTab === 'Comments') {
+      fetchComments();
+    }
+  }, [selectedTab]);
+
+  const handleProfilePictureChange = async () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 1,
+    };
+
+    launchImageLibrary(options, async (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else {
+        const uri = response.assets[0].uri;
+        setUserData({ ...userData, profilePicture: uri });
+
+        // Update the server with the new profile picture
+        try {
+          const token = await getToken();    
+          const formData = new FormData();
+          formData.append('file', uri);  // imageFile is the file you're uploading
+          formData.append('folder', 'pfp');
+
+          const config = {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${token}`,
+            },
+          };
+
+          await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile',formData ,config );
+          Alert.alert('Success', 'Profile picture updated successfully');
+        } catch (error) {
+          console.error('Error updating profile picture:', error);
+        }
+      }
+    });
+  };
+
+  const handleNameUpdate = async () => {
+    if (!editedName || editedName === userData.actualName) {
+      setIsEditingName(false);
+      return;
+    }
+
+    setUserData({ ...userData, actualName: editedName });
+    setIsEditingName(false);
+
+    // Update the server with the new name
+    try {
+      const token = await getToken();
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile', {
+        name: editedName,
+      }, config);
+
+      userData.name = editedName;
+      Alert.alert('Success', 'Name updated successfully');
+    } catch (error) {
+      console.error('Error updating name:', error);
+    }
+  };
+
+  const handleBioUpdate = async () => {
+    if (!editedBio || editedBio === userData.bio) {
+      setIsEditingBio(false);
+      return;
+    }
+
+    setUserData({ ...userData, bio: editedBio });
+    setIsEditingBio(false);
+
+    // Update the server with the new bio
+    try {
+      const token = await getToken();
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile', {
+        bio: editedBio,
+      },config);
+
+      userData.bio = editedBio;
+      Alert.alert('Success', 'Bio updated successfully');
+    } catch (error) {
+      console.error('Error updating bio:', error);
+    }
+  };
+
+  // Dismiss editing when tapping outside
+  const handleOutsideTap = () => {
+    if (isEditingName) {
+      handleNameUpdate();
+    }
+    if (isEditingBio) {
+      handleBioUpdate();
+    }
+    Keyboard.dismiss(); // Hide the keyboard
+  };
+
+  const renderComment = ({ item }) => (
+    <View style={styles.commentCard}>
+      <Text style={styles.commentTime}>{moment(item.createdAt).fromNow()}</Text>
+      <Text style={styles.commentText}>{item.comment_text}</Text>
+      <View style={styles.commentActions}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => console.log('pressed like')}
+        >
+          <Icon name="thumb-up" size={20} />
+          {/*<Text style={styles.actionText}>{item.likes} Likes</Text>*/}
+        </TouchableOpacity>
       </View>
-      <Text style={styles.postTitle}>{item.title}</Text>
-      <Text style={styles.postContent}>{item.content}</Text>
+    </View>
+  );
+
+  const renderPost = ({ item }) => (
+    <View style={styles.postCard}>
+      <Text style={styles.postTitle}>{item.post_title}</Text>
+      {item.post_image_link && <Image source={{ uri: item.post_image_link }} style={styles.postImage} />}
+      {item.post_content && <Text style={styles.postContent}>{item.post_content}</Text>}
       <View style={styles.postActions}>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.likeText}>{item.likes} Likes</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Like pressed')}>
+          <Icon name="thumb-up" size={20} />
+          <Text style={styles.actionText}>{item.post_points}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.commentText}>{item.comments} Comments</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.shareText}>Share</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Comments pressed')}>
+          <Icon name="comment" size={20} />
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      {/* Profile Section */}
-      {loading ? (
-        <ActivityIndicator size="large" color="#A98CE6" style={styles.loader} />
-      ) : (
-        <View style={styles.profileSection}>
-          <View style={styles.headerContainer}>
-            <Image source={{ uri: profile.profilePic }} style={styles.profilePic} />
-            <View style={styles.connectionStats}>
-              <View style={styles.statBox}>
-                <Text style={styles.statText}>Connections {profile.connections}</Text>
+    <TouchableWithoutFeedback onPress={handleOutsideTap}>
+      <View style={styles.container}>
+        {/* Header Bar */}
+        <View style={styles.header}>
+          <TouchableOpacity>
+            <Icon name="arrow-back" size={24} onPress={() => console.log('Back pressed')} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Connectify</Text>
+          <TouchableOpacity>
+            <Icon name="settings" size={24} onPress={() => console.log('Settings pressed')} />
+          </TouchableOpacity>
+        </View>
+
+        {/* User Info Section */}
+        <View style={styles.userInfoContainer}>
+          <View style={styles.profileSection}>
+            <TouchableOpacity onPress={handleProfilePictureChange}>
+              <Image
+                source={{ uri: userData.pfp_link || 'https://via.placeholder.com/100' }}
+                style={styles.profilePicture}
+              />
+            </TouchableOpacity>
+            <View style={styles.statsContainer}>
+              <View style={styles.stat}>
+                <Text style={styles.statValue}>{userData.connections}</Text>
+                <Text style={styles.statLabel}>Connections</Text>
               </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statText}>Communities {profile.communities}</Text>
+              <View style={styles.stat}>
+                <Text style={styles.statValue}>{userData.communities}</Text>
+                <Text style={styles.statLabel}>Communities</Text>
               </View>
             </View>
-            <Text style={styles.profileName}>{profile.username}</Text>
           </View>
-          <Text style={styles.aboutTitle}>About</Text>
-          <Text style={styles.aboutText}>{profile.bio}</Text>
+          <View style={styles.userInfo}>
+            <Text style={styles.username}>{userData.username}</Text>
+            {isEditingName ? (
+              <TextInput
+                style={styles.editableText}
+                value={editedName}
+                onChangeText={setEditedName}
+                onBlur={handleNameUpdate}
+                autoFocus
+              />
+            ) : (
+              <Text style={styles.actualName} onPress={() => setIsEditingName(true)}>
+                {userData.name || 'Edit Name'}
+              </Text>
+            )}
+            <Text style={styles.bioLabel}>Bio</Text>
+            {isEditingBio ? (
+              <TextInput
+                style={styles.editableText}
+                value={editedBio}
+                onChangeText={setEditedBio}
+                onBlur={handleBioUpdate}
+                autoFocus
+              />
+            ) : (
+              <Text style={styles.bio} onPress={() => setIsEditingBio(true)}>
+                {userData.bio}
+              </Text>
+            )}
+          </View>
         </View>
-      )}
 
-      {/* Tabs */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity style={styles.tab} onPress={() => setActiveTab('Posts')}>
-          <Text style={styles.tabLabel}>Posts</Text>
-          {activeTab === 'Posts' && <View style={styles.indicator} />}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tab} onPress={() => setActiveTab('Media')}>
-          <Text style={styles.tabLabel}>Comments</Text>
-          {activeTab === 'Media' && <View style={styles.indicator} />}
-        </TouchableOpacity>
-      </View>
-
-      {/* Posts or Media Section */}
-      {loading ? (
-        <ActivityIndicator size="large" color="#A98CE6" style={styles.loader} />
-      ) : (
-        activeTab === 'Posts' ? (
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderPost}
-            style={styles.feedContainer}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          <View style={styles.mediaContainer}>
-            <Text style={styles.mediaText}>Media Content Goes Here</Text>
-            {/* Add Media Content Logic Here */}
+        {/* Tabs */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, selectedTab === 'Posts' && styles.activeTab]}
+            onPress={() => setSelectedTab('Posts')}
+          >
+            <Text style={styles.tabText}>Posts</Text>
+            
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, selectedTab === 'Comments' && styles.activeTab]}
+            onPress={() => setSelectedTab('Comments')}
+          >
+            <Text style={styles.tabText}>Comments</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{flex:1}}>
+          {
+          <View>
+            {selectedTab === 'Posts' && (
+              <FlatList
+                data={posts}
+                keyExtractor={(item) => item._id} // Ensure this matches your data structure
+                renderItem={renderPost}
+                ListEmptyComponent={<Text style={styles.noPostsText}>No posts available.</Text>}
+                contentContainerStyle ={styles.contentContainer} 
+              />
+            )}
           </View>
-        )
-      )}
-    </View>
+          }
+          {
+          <View>
+            {
+            selectedTab === 'Comments' && (
+              <FlatList
+                data={comments}
+                keyExtractor={(item) => item._id}
+                renderItem={renderComment}
+                ListEmptyComponent={<Text style={styles.noCommentsText}>No comments available.</Text>}
+                contentContainerStyle ={styles.contentContainer} 
+              />
+            )}
+            </View>
+          }
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    fontFamily: 'Roboto',
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    padding: 16,
+    backgroundColor: '#f8f8f8',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    elevation: 1, 
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  userInfoContainer: {
+    padding: 20,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
   profileSection: {
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-    marginBottom: 24,
-  },
-  headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  profilePic: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 2,
-    borderColor: '#A98CE6',
     marginRight: 16,
   },
-  connectionStats: {
-    flex: 1,
+  profilePicture: {
+    width: 130,
+    height: 130,
+    borderRadius: 100,
+    marginRight: 16,
   },
-  statBox: {
-    backgroundColor: '#E0E0E0',
-    borderRadius: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    marginBottom: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  statsContainer: {
+    marginLeft: 80,
+    justifyContent: 'center',
   },
-  statText: {
+  stat: {
+    marginBottom: 5,
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  statLabel: {
     fontSize: 14,
-    color: '#333333',
+    color: '#888',
   },
-  profileName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#333333',
-  },
-  aboutTitle: {
+  userInfo: {
+    marginTop: 10,
+   },
+  username: {
     fontSize: 18,
-    fontWeight: '600',
-    marginVertical: 10,
+    fontWeight: 'bold',
   },
-  aboutText: {
+  editableText: {
+    fontSize: 16,
+    color: '#333',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  actualName: {
+    fontSize: 16,
+    color: '#555',
+    marginVertical: 5,
+  },
+  bioLabel: {
+    fontSize: 16,
+    color: '#333',
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  bio: {
     fontSize: 14,
-    color: '#666666',
-    lineHeight: 20,
+    color: '#777',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#EAECEC',
-    borderRadius: 10,
-    marginBottom: 16,
-    paddingVertical: 10,
+    justifyContent: 'space-around',
+    paddingVertical: 4,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
   },
   tab: {
     flex: 1,
+    padding: 10,
     alignItems: 'center',
-    paddingVertical: 10,
   },
-  tabLabel: {
-    fontWeight: '700',
+  activeTab: {
+    borderBottomWidth: 3,
+    borderColor: '#000',
+  },
+  tabText: {
     fontSize: 16,
-    color: '#444444',
+    color: '#333',
   },
-  indicator: {
-    height: 4,
-    width: '100%',
-    backgroundColor: '#A98CE6',
-    borderRadius: 100,
+  noPostsText: {
+    textAlign: 'center',
+    color: '#888',
+    marginTop: 20,
   },
-  feedContainer: {
-    flex: 1,
-  },
-  postContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  postDate: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 10,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  tag: {
-    backgroundColor: '#D9D9D9',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  postCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    marginTop: 8,
+    marginLeft: 8,
     marginRight: 8,
-  },
-  tagText: {
-    fontSize: 12,
-    color: '#000',
+    elevation: 3,
   },
   postTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
-    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  postImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginVertical: 8,
   },
   postContent: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 10,
+    fontSize: 16,
+    color: '#555',
   },
   postActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 10,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  likeText: {
-    fontSize: 14,
-    color: '#000',
+  actionText: {
+    marginLeft: 5,
+  },
+  commentCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    marginTop: 8,
+    marginLeft: 8,
+    marginRight: 8,
+    elevation: 3,
+  },
+  commentTime: {
+    fontSize: 12,
+    color: '#999',
   },
   commentText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  shareText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  loader: {
-    marginTop: 50,
-  },
-  mediaContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  mediaText: {
     fontSize: 16,
-    color: '#333',
+    marginVertical: 8,
+  },
+  commentActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  noCommentsText: {
+    textAlign: 'center',
+    color: '#888',
+    marginTop: 20,
+  },
+  contentContainer: {
+    flexGrow: 1,
   },
 });
-
 export default ProfileScreen;

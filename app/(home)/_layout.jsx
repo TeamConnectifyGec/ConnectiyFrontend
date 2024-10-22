@@ -7,7 +7,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Import your screens
 import ProfileScreen from './profile';
-import FeedScreen from './index';
+import FeedScreen from './feed';
 import NotificationScreen from './notification';
 import PostScreen from './post';
 import CommunitiesScreen from './communities';

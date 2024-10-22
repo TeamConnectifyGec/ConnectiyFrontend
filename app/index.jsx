@@ -12,7 +12,7 @@ export default function Index() {
       const token = await getToken();
       if (token) {
         // Navigate to home if the token exists
-        router.replace('(home)'); 
+        router.replace('(home)/feed'); 
       } else {
         // Navigate to auth if there is no token
         router.replace('(auth)');
