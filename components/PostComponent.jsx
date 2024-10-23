@@ -1,17 +1,23 @@
 import React from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import { useNavigation } from '@react-navigation/native';
+
 
 const PostComponent = ({ post }) => {
-    const handleCommentPress = () => {
-        console.log("Comment button pressed");
-    };
+
+    const navigation = useNavigation();
+
 
     let user = post && post.user_id ? post.user_id : null;
 
     if (!user) {
-        user = post
+        user = post;
     }
+    const handleCommentPress = () => {
+        console.log("Comment button pressed");
+        navigation.navigate('Comments', { postId: post._id })
+    };
     return (
         <View style={styles.feed}>
             <View style={styles.profileSection}>

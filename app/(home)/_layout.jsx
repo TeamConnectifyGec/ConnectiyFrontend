@@ -2,6 +2,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Stack } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -11,15 +12,18 @@ import FeedScreen from './feed';
 import NotificationScreen from './notification';
 import PostScreen from './post';
 import CommunitiesScreen from './communities';
+import CommentsScreen from './comments'; // Import the comments screen
 
 const Tab = createBottomTabNavigator();
+const StackNavigator = createStackNavigator();
 
-export default function HomeLayout() {
+// Main tab navigator for the app
+function TabLayout() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarShowLabel: false, // Hide labels
+        tabBarShowLabel: false,
         tabBarStyle: { backgroundColor: '#fff' },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
@@ -42,7 +46,6 @@ export default function HomeLayout() {
               break;
           }
 
-          // Change color when tab is active
           color = focused ? '#A98CE6' : '#1E1E1E';
           return <Icon name={iconName} color={color} size={30} />;
         },
@@ -54,6 +57,24 @@ export default function HomeLayout() {
       <Tab.Screen name="Notifications" component={NotificationScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
+  );
+}
+
+// Wrap TabLayout in a stack navigator to include the Comments screen
+export default function HomeLayout() {
+  return (
+    <StackNavigator.Navigator>
+      <StackNavigator.Screen
+        name="MainTabs"
+        component={TabLayout}
+        options={{ headerShown: false }} // Hide header for tabs
+      />
+      <StackNavigator.Screen
+        name="Comments"
+        component={CommentsScreen}
+        options={{ title: 'Comments' }}
+      />
+    </StackNavigator.Navigator>
   );
 }
 
