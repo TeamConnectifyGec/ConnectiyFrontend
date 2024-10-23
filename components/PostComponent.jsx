@@ -17,6 +17,7 @@ const PostComponent = ({ post }) => {
     const handleCommentPress = () => {
         console.log("Comment button pressed");
         navigation.navigate('Comments', { postId: post._id })
+        console.log(post._id)
     };
     return (
         <View style={styles.feed}>

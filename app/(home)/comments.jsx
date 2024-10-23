@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, Button, Pressable } from 'react-native';
 import { getToken } from '../../utils/tokenStorage';
+import axios from 'axios';
 
 const CommentsScreen = ({ route, navigation }) => {
     const [comments, setComments] = useState([]);
@@ -29,7 +30,7 @@ const CommentsScreen = ({ route, navigation }) => {
                   Authorization: `Bearer ${token}`,
                 },
               };
-              const response = await axios.get('https://connectify-backend-seven.vercel.app/api/search/comments',{post_id: postId},config); 
+              const response = await axios.get('https://connectify-backend-seven.vercel.app/api/search/comments',{post_id: postId}, config); 
       
               setComments(response.data);
             } catch(error){
