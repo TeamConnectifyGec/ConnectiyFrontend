@@ -146,7 +146,7 @@ const Feed = () => {
 
 const styles = StyleSheet.create({
   container: {
-    fontFamily: 'Roboto',
+    // fontFamily: 'Roboto',
     flex: 1,
     backgroundColor: '#F5F5F5',
     padding: 0,

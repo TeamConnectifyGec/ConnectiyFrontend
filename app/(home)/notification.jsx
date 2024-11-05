@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
         paddingLeft: 15,
     },
     headerText: {
-        fontFamily: 'Keania One',
+        // fontFamily: 'Keania One',
         fontSize: 26,
         lineHeight: 32,
         color: '#444444',
@@ -91,17 +91,17 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     notificationTitle: {
-        fontFamily: 'Roboto',
+        // fontFamily: 'Roboto',
         fontSize: 12,
         color: '#000000',
     },
     notificationMessage: {
-        fontFamily: 'Roboto',
+        // fontFamily: 'Roboto',
         fontSize: 10,
         color: '#000000',
     },
     notificationTime: {
-        fontFamily: 'Roboto',
+        // fontFamily: 'Roboto',
         fontSize: 8,
         color: '#000000',
     },

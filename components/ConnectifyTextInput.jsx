@@ -50,7 +50,6 @@ const styles = StyleSheet.create({
     input: {
         textAlign: 'left',
         fontSize: 16,
-        fontFamily: 'Inter',
         paddingHorizontal: 5,
     },
 });

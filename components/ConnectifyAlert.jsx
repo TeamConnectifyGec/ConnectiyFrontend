@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalText: {
-    fontFamily: 'Inter',
+    // fontFamily: 'Inter',
     fontSize: 15,
     letterSpacing: 0.25,
     marginBottom: 20,

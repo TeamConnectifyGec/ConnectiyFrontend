@@ -42,7 +42,6 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   text: {
-    fontFamily: 'Inter',
     fontSize: 20,
     lineHeight: 21,
     fontWeight: 'bold',

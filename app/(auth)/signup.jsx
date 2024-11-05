@@ -140,7 +140,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontFamily: 'Inter',
     fontSize: 15,
     lineHeight: 21,
     letterSpacing: 0.25,

@@ -1,4 +1,3 @@
-
 // screens/Comments.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, Button, Pressable } from 'react-native';
@@ -11,45 +10,69 @@ const CommentsScreen = ({ route, navigation }) => {
     const { postId } = route.params; // Get the postId passed as a parameter
 
     useEffect(() => {
-        // Fetch comments for the post when the component mounts
-        // This is just a placeholder for the real API call
         const fetchComments = async () => {
-            // // Fetch comments for the postId
-            // const fetchedComments = [
-            //     { id: '1', text: 'Great post!' },
-            //     { id: '2', text: 'Very informative.' },
-            //     { id: '3', text: 'Thanks for sharing.' }
-            // ];
-            // setComments(fetchedComments);
-            // console.log(fetchedComments);
             const token = await getToken();
-            try{
-
-              const config = {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              };
-              const response = await axios.get('https://connectify-backend-seven.vercel.app/api/search/comments',{post_id: postId}, config); 
-      
-              setComments(response.data);
-            } catch(error){
-              console.error('Error fetching user communities count:', error);
+            try {
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+                const response = await axios.post(
+                    'https://connectify-backend-seven.vercel.app/api/search/comments',
+                    { post_id: postId },
+                    config
+                );
+                
+                const formattedComments = response.data.map(comment => ({
+                    id: comment._id,
+                    text: comment.comment_text,
+                    username: comment.user_id.username,
+                }));
+                setComments(formattedComments);
+            } catch (error) {
+                if (error.response.status === 404) {
+                    console.log('No comments found');
+                } else {
+                    console.error('Error fetching comments:', error);
+                }
             }
         };
         fetchComments();
     }, [postId]);
 
-    const handleAddComment = () => {
+    const handleAddComment = async () => {
         if (newComment.trim()) {
-            // Add the new comment to the list (placeholder)
-            setComments([...comments, { id: Date.now().toString(), text: newComment }]);
-            setNewComment('');
+            const token = await getToken();
+            try {
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+                const response = await axios.post(
+                    'https://connectify-backend-seven.vercel.app/api/user/create-comment',
+                    { post_id: postId, comment_text: newComment },
+                    config
+                );
+
+                const addedComment = {
+                    id: response.data.comment._id,
+                    text: response.data.comment.comment_text,
+                    username: response.data.comment.user_id.username,
+                };
+
+                setComments([...comments, addedComment]);
+                setNewComment('');
+            } catch (error) {
+                console.error('Error adding comment:', error);
+            }
         }
     };
 
     const renderCommentItem = ({ item }) => (
         <View style={styles.commentItem}>
+            <Text style={styles.commentAuthor}>{item.username}</Text>
             <Text>{item.text}</Text>
         </View>
     );
@@ -97,6 +120,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 2,
         elevation: 2,
+    },
+    commentAuthor: {
+        fontWeight: 'bold',
     },
     inputContainer: {
         flexDirection: 'row',

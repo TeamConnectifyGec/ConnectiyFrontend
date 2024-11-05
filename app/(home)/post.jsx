@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headingText: {
-    fontFamily: 'Roboto',
+    // fontFamily: 'Roboto',
     fontWeight: 'bold',
     fontSize: 25,
     lineHeight: 29,
