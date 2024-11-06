@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import ConnectionNotification from '../../components/ConnectionRequestComponent';
+import { getToken } from '../../utils/tokenStorage';
+import axios from 'axios';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -8,9 +11,19 @@ const Notifications = () => {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await fetch('https://your-api-url.com/notifications');
-                const data = await response.json();
-                setNotifications(data);
+                const token = await getToken();
+                if (!token) {
+                    console.error('No token found');
+                    setLoading(false);
+                    return;
+                }
+
+                const config = {
+                    headers: { Authorization: `Bearer ${token}` },
+                };
+
+                const response = await axios.post('https://connectify-backend-seven.vercel.app/api/notification/connection-request', {} ,config);
+                setNotifications(response.data.pendingRequests);
             } catch (error) {
                 console.error('Error fetching notifications:', error);
             } finally {
@@ -20,6 +33,10 @@ const Notifications = () => {
 
         fetchNotifications();
     }, []);
+
+    const handleActionComplete = (notificationId) => {
+        setNotifications(notifications.filter(notification => notification._id !== notificationId));
+    };
 
     if (loading) {
         return (
@@ -35,18 +52,22 @@ const Notifications = () => {
                 <Text style={styles.headerText}>Notifications</Text>
             </View>
             <ScrollView style={styles.scrollView}>
-                {notifications.map((notification, index) => (
-                    <View key={index} style={styles.notificationItem}>
-                        <Text style={styles.notificationTitle}>{notification.title}</Text>
-                        <Text style={styles.notificationMessage}>{notification.message}</Text>
-                        <Text style={styles.notificationTime}>{notification.time}</Text>
-                    </View>
-                ))}
+                {notifications.length === 0 ? (
+                    <Text style={styles.noDataText}>No notifications found.</Text>
+                ) : (
+                    notifications.map((notification, index) => (
+                        <ConnectionNotification
+                            key={index}
+                            notification={notification}
+                            onActionComplete={handleActionComplete}
+                        />
+                    ))
+                )}
             </ScrollView>
-            {/* Navigation bar is included from _layout, no need to redefine it */}
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -68,7 +89,6 @@ const styles = StyleSheet.create({
         paddingLeft: 15,
     },
     headerText: {
-        // fontFamily: 'Keania One',
         fontSize: 26,
         lineHeight: 32,
         color: '#444444',
@@ -76,34 +96,11 @@ const styles = StyleSheet.create({
     scrollView: {
         marginTop: 80, // Adjust for header
     },
-    notificationItem: {
-        backgroundColor: '#FEFFFF',
-        padding: 15,
-        marginVertical: 5,
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 1.5,
-        elevation: 3,
-    },
-    notificationTitle: {
-        // fontFamily: 'Roboto',
-        fontSize: 12,
-        color: '#000000',
-    },
-    notificationMessage: {
-        // fontFamily: 'Roboto',
-        fontSize: 10,
-        color: '#000000',
-    },
-    notificationTime: {
-        // fontFamily: 'Roboto',
-        fontSize: 8,
-        color: '#000000',
+    noDataText: {
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: 16,
+        color: '#888888',
     },
 });
 

@@ -11,8 +11,10 @@ import ProfileScreen from './profile';
 import FeedScreen from './feed';
 import NotificationScreen from './notification';
 import PostScreen from './post';
-import CommunitiesScreen from './communities';
+// import CommunitiesScreen from './communities';
 import CommentsScreen from './comments'; // Import the comments screen
+import ConnectionsPage from './connections';
+import SettingsScreen from './settings'; // Import the settings screen
 
 const Tab = createBottomTabNavigator();
 const StackNavigator = createStackNavigator();
@@ -32,7 +34,7 @@ function TabLayout() {
             case 'Feed':
               iconName = 'home';
               break;
-            case 'Communities':
+            case 'Connections':
               iconName = 'account-group';
               break;
             case 'Post':
@@ -52,7 +54,7 @@ function TabLayout() {
       })}
     >
       <Tab.Screen name="Feed" component={FeedScreen} />
-      <Tab.Screen name="Communities" component={CommunitiesScreen} />
+      <Tab.Screen name="Connections" component={ConnectionsPage} />
       <Tab.Screen name="Post" component={PostScreen} />
       <Tab.Screen name="Notifications" component={NotificationScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
@@ -74,9 +76,15 @@ export default function HomeLayout() {
         component={CommentsScreen}
         options={{ title: 'Comments' }}
       />
+      <StackNavigator.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: 'Settings' }}
+      />
     </StackNavigator.Navigator>
   );
 }
+
 
 const styles = StyleSheet.create({
   navBar: {

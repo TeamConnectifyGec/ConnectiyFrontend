@@ -1,16 +1,32 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import axios from 'axios';
+import {getToken} from '../utils/tokenStorage'; // Adjust the import based on your project structure
 
 const CommunityComponent = ({ community }) => {
-    const handleJoinPress = () => {
-        // Handle join button press
-        console.log('Join button pressed');
+    const handleJoinPress = async () => {
+        const token = await getToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
+
+        try {
+            const response = await axios.post('https://connectify-backend-seven.vercel.app/api/user/communities/join', { communityId: community._id }, config);
+            console.log('Join response:', response.data);
+        } catch (error) {
+            console.error('Error joining community:', error);
+        }
     };
 
     let data = community && community.community ? community.community : null;
 
     if (!data) {
-        data = community
+        data = community;
     }
     return (
         <View style={styles.communityContainer}>

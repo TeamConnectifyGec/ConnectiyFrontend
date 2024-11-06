@@ -1,6 +1,6 @@
 // File: ProfileScreen.js
-import { getToken } from '../../utils/tokenStorage'; 
-import React, { useState, useEffect } from 'react';
+import { getToken } from "../../utils/tokenStorage";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,33 +10,39 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   Keyboard,
-  Alert,  
+  Alert,
   FlatList,
   ScrollView,
-} from 'react-native';
-import { Icon } from 'react-native-elements';
-import axios from 'axios';
-import * as ImagePicker from 'expo-image-picker';
-import moment from 'moment/moment';
+} from "react-native";
+import { Icon } from "react-native-elements";
+import axios from "axios";
+import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "@react-navigation/native";
+import moment from "moment/moment";
+import Post from "./components/profilePostComponent";
+import Comment from "./components/profileCommentComponent";
 
 const ProfileScreen = () => {
   const [userData, setUserData] = useState({
-    pfp_link: '',
-    username: '',
-    name: '',
-    bio: '',
-    email: '',
-    _id: '',
+    pfp_link: "",
+    username: "",
+    name: "",
+    bio: "",
+    email: "",
+    _id: "",
   });
+  const navigation = useNavigation();
   const [connections, setConnections] = useState(0);
   const [communities, setCommunities] = useState(0);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
-  const [editedName, setEditedName] = useState('');
-  const [editedBio, setEditedBio] = useState('');
-  const [selectedTab, setSelectedTab] = useState('Posts'); 
+  const [editedName, setEditedName] = useState("");
+  const [editedBio, setEditedBio] = useState("");
+  const [selectedTab, setSelectedTab] = useState("Posts");
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
+  const renderPost = ({ item }) => <Post item={item} />;
+  const renderComment = ({ item }) => <Comment item={item} />;
 
   // Fetch user data from the server
   useEffect(() => {
@@ -48,49 +54,54 @@ const ProfileScreen = () => {
             Authorization: `Bearer ${token}`,
           },
         };
-        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/profile',config); // Replace with your API endpoint
+        const response = await axios.get(
+          "https://connectify-backend-seven.vercel.app/api/user/profile",
+          config
+        ); // Replace with your API endpoint
         setUserData(response.data);
-        setEditedName(response.data.name || ''); // Set default if actualName is not available
+        setEditedName(response.data.name || ""); // Set default if actualName is not available
         setEditedBio(response.data.bio);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error("Error fetching user data:", error);
       }
 
-      try{
-
+      try {
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         };
-        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/connections/count',config); 
+        const response = await axios.get(
+          "https://connectify-backend-seven.vercel.app/api/user/connections/count",
+          config
+        );
 
         setConnections(response.data.count);
-        console.log(connections);
-        
-      } catch(error){
-        console.error('Error fetching user connections count:', error);
-      }
-      
-      try{
 
+      } catch (error) {
+        console.error("Error fetching user connections count:", error);
+      }
+
+      try {
         const config = {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         };
-        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/communities/count',config); 
+        const response = await axios.get(
+          "https://connectify-backend-seven.vercel.app/api/user/communities/count",
+          config
+        );
 
         setCommunities(response.data.count);
-      } catch(error){
-        console.error('Error fetching user communities count:', error);
+      } catch (error) {
+        console.error("Error fetching user communities count:", error);
       }
     };
     fetchData();
   }, []);
 
   useEffect(() => {
-
     const fetchPosts = async () => {
       try {
         const token = await getToken();
@@ -99,10 +110,13 @@ const ProfileScreen = () => {
             Authorization: `Bearer ${token}`,
           },
         };
-        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/posts', config);
+        const response = await axios.get(
+          "https://connectify-backend-seven.vercel.app/api/user/posts",
+          config
+        );
         setPosts(response.data.posts);
       } catch (error) {
-        console.error('Error fetching posts:', error);
+        console.error("Error fetching posts:", error);
       }
     };
     fetchPosts();
@@ -118,13 +132,16 @@ const ProfileScreen = () => {
             Authorization: `Bearer ${token}`,
           },
         };
-        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/comments', config);
+        const response = await axios.get(
+          "https://connectify-backend-seven.vercel.app/api/user/comments",
+          config
+        );
         setComments(response.data.comments);
       } catch (error) {
-        console.error('Error fetching comments:', error);
+        console.error("Error fetching comments:", error);
       }
     };
-    if (selectedTab === 'Comments') {
+    if (selectedTab === "Comments") {
       fetchComments();
     }
   }, [selectedTab]);
@@ -136,20 +153,20 @@ const ProfileScreen = () => {
       aspect: [1, 1],
       quality: 1,
     };
-    
+
     const getImageType = (uri) => {
-      const extension = uri.split('.').pop();
-      let type = '';
+      const extension = uri.split(".").pop();
+      let type = "";
       switch (extension) {
-        case 'jpg':
-        case 'jpeg':
-          type = 'image/jpeg';
+        case "jpg":
+        case "jpeg":
+          type = "image/jpeg";
           break;
-        case 'png':
-          type = 'image/png';
+        case "png":
+          type = "image/png";
           break;
         default:
-          type = 'application/octet-stream'; // Fallback if extension is unknown
+          type = "application/octet-stream"; // Fallback if extension is unknown
       }
       return type;
     };
@@ -158,45 +175,47 @@ const ProfileScreen = () => {
       let result = await ImagePicker.launchImageLibraryAsync(options);
 
       if (result.didCancel) {
-        console.log('User cancelled image picker');
+        console.log("User cancelled image picker");
       } else if (result.error) {
-        console.log('ImagePicker Error: ', result.error);
+        console.log("ImagePicker Error: ", result.error);
       } else {
         const uri = result.assets[0].uri;
         try {
+          const token = await getToken();
 
-          const token = await getToken();    
-          
           const formData = new FormData();
 
           const imageType = getImageType(uri);
-          formData.append('file', {
+          formData.append("file", {
             uri: uri,
-            name: `photo.${uri.split('.').pop()}`,
-            type: imageType
-          }); 
-          
-          formData.append('folder', 'pfp');
+            name: `photo.${uri.split(".").pop()}`,
+            type: imageType,
+          });
+
+          formData.append("folder", "pfp");
 
           const config = {
             headers: {
-              'Content-Type': 'multipart/form-data',
+              "Content-Type": "multipart/form-data",
               Authorization: `Bearer ${token}`,
             },
           };
 
-          const response = await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile',formData ,config );
+          const response = await axios.put(
+            "https://connectify-backend-seven.vercel.app/api/user/profile",
+            formData,
+            config
+          );
 
           setUserData({ ...userData, pfp_link: response.data.pfp_link });
 
-          Alert.alert('Success', 'Profile picture updated successfully');
+          Alert.alert("Success", "Profile picture updated successfully");
         } catch (error) {
-          console.error('Error updating profile picture:', error);
+          console.error("Error updating profile picture:", error);
         }
       }
     };
     await pickImage();
-
   };
 
   const handleNameUpdate = async () => {
@@ -213,19 +232,23 @@ const ProfileScreen = () => {
       const token = await getToken();
       const config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       };
 
-      await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile', {
-        name: editedName,
-      }, config);
+      await axios.put(
+        "https://connectify-backend-seven.vercel.app/api/user/profile",
+        {
+          name: editedName,
+        },
+        config
+      );
 
       userData.name = editedName;
-      Alert.alert('Success', 'Name updated successfully');
+      Alert.alert("Success", "Name updated successfully");
     } catch (error) {
-      console.error('Error updating name:', error);
+      console.error("Error updating name:", error);
     }
   };
 
@@ -243,19 +266,23 @@ const ProfileScreen = () => {
       const token = await getToken();
       const config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       };
 
-      await axios.put('https://connectify-backend-seven.vercel.app/api/user/profile', {
-        bio: editedBio,
-      },config);
+      await axios.put(
+        "https://connectify-backend-seven.vercel.app/api/user/profile",
+        {
+          bio: editedBio,
+        },
+        config
+      );
 
       userData.bio = editedBio;
-      Alert.alert('Success', 'Bio updated successfully');
+      Alert.alert("Success", "Bio updated successfully");
     } catch (error) {
-      console.error('Error updating bio:', error);
+      console.error("Error updating bio:", error);
     }
   };
 
@@ -270,183 +297,169 @@ const ProfileScreen = () => {
     Keyboard.dismiss(); // Hide the keyboard
   };
 
-  const renderComment = ({ item }) => (
-    <View style={styles.commentCard}>
-      <Text style={styles.commentTime}>{moment(item.createdAt).fromNow()}</Text>
-      <Text style={styles.commentText}>{item.comment_text}</Text>
-      <View style={styles.commentActions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => console.log('pressed like')}
-        >
-          <Icon name="thumb-up" size={20} />
-          {/*<Text style={styles.actionText}>{item.likes} Likes</Text>*/}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  const renderPost = ({ item }) => (
-    <View style={styles.postCard}>
-      <Text style={styles.postTitle}>{item.post_title}</Text>
-      {item.post_image_link && <Image source={{ uri: item.post_image_link }} style={styles.postImage} />}
-      {item.post_content && <Text style={styles.postContent}>{item.post_content}</Text>}
-      <View style={styles.postActions}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Like pressed')}>
-          <Icon name="thumb-up" size={20} />
-          <Text style={styles.actionText}>{item.post_points}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Comments pressed')}>
-          <Icon name="comment" size={20} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const handleSettingsPress = () => {
+    navigation.navigate("Settings");
+  };
 
   return (
-    <TouchableWithoutFeedback onPress={handleOutsideTap}>
-      <View style={styles.container}>
-        {/* Header Bar */}
-        <View style={styles.header}>
-          <TouchableOpacity>
-            <Icon name="arrow-back" size={24} onPress={() => console.log('Back pressed')} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Connectify</Text>
-          <TouchableOpacity>
-            <Icon name="settings" size={24} onPress={() => console.log('Settings pressed')} />
-          </TouchableOpacity>
-        </View>
-
-        {/* User Info Section */}
-        <View style={styles.userInfoContainer}>
-          <View style={styles.profileSection}>
-            <TouchableOpacity onPress={handleProfilePictureChange}>
-              <Image
-                source={{ uri: userData.pfp_link || 'https://via.placeholder.com/100' }}
-                style={styles.profilePicture}
+    <View style={styles.container}>
+      <TouchableWithoutFeedback onPress={handleOutsideTap}>
+        <View>
+          {/* Header Bar */}
+          <View style={styles.header}>
+            <TouchableOpacity>
+              <Icon
+                name="arrow-back"
+                size={24}
+                onPress={() => console.log("Back pressed")}
               />
             </TouchableOpacity>
-            <View style={styles.statsContainer}>
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>{connections}</Text>
-                <Text style={styles.statLabel}>Connections</Text>
-              </View>
-              <View style={styles.stat}>
-                <Text style={styles.statValue}>{communities}</Text>
-                <Text style={styles.statLabel}>Communities</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.username}>{userData.username}</Text>
-            {isEditingName ? (
-              <TextInput
-                style={styles.editableText}
-                value={editedName}
-                onChangeText={setEditedName}
-                onBlur={handleNameUpdate}
-                autoFocus
+            <Text style={styles.headerTitle}>Connectify</Text>
+            <TouchableOpacity>
+              <Icon
+                name="settings"
+                size={24}
+                onPress={handleSettingsPress}
               />
-            ) : (
-              <Text style={styles.actualName} onPress={() => setIsEditingName(true)}>
-                {userData.name || 'Edit Name'}
-              </Text>
-            )}
-            <Text style={styles.bioLabel}>Bio</Text>
-            {isEditingBio ? (
-              <TextInput
-                style={styles.editableText}
-                value={editedBio}
-                onChangeText={setEditedBio}
-                onBlur={handleBioUpdate}
-                autoFocus
-              />
-            ) : (
-              <Text style={styles.bio} onPress={() => setIsEditingBio(true)}>
-                {userData.bio}
-              </Text>
-            )}
+            </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Tabs */}
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[styles.tab, selectedTab === 'Posts' && styles.activeTab]}
-            onPress={() => setSelectedTab('Posts')}
-          >
-            <Text style={styles.tabText}>Posts</Text>
-            
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, selectedTab === 'Comments' && styles.activeTab]}
-            onPress={() => setSelectedTab('Comments')}
-          >
-            <Text style={styles.tabText}>Comments</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={{flex:1}}>
-          {
-          <View >
-            {selectedTab === 'Posts' && (
-              <FlatList
-                data={posts}
-                keyExtractor={(item) => item._id} // Ensure this matches your data structure
-                renderItem={renderPost}
-                ListEmptyComponent={<Text style={styles.noPostsText}>No posts available.</Text>}
-                contentContainerStyle ={styles.contentContainer} 
-              />
-            )}
-          </View>
-          }
-          {
-          <View>
-            {
-            selectedTab === 'Comments' && (
-              <FlatList
-                data={comments}
-                keyExtractor={(item) => item._id}
-                renderItem={renderComment}
-                ListEmptyComponent={<Text style={styles.noCommentsText}>No comments available.</Text>}
-                contentContainerStyle ={styles.contentContainer} 
-              />
-            )}
+          {/* User Info Section */}
+          <View style={styles.userInfoContainer}>
+            <View style={styles.profileSection}>
+              <TouchableOpacity onPress={handleProfilePictureChange}>
+                <Image
+                  source={{
+                    uri: userData.pfp_link || "https://via.placeholder.com/100",
+                  }}
+                  style={styles.profilePicture}
+                />
+              </TouchableOpacity>
+              <View style={styles.statsContainer}>
+                <View style={styles.stat}>
+                  <Text style={styles.statValue}>{connections}</Text>
+                  <Text style={styles.statLabel}>Connections</Text>
+                </View>
+                <View style={styles.stat}>
+                  <Text style={styles.statValue}>{communities}</Text>
+                  <Text style={styles.statLabel}>Communities</Text>
+                </View>
+              </View>
             </View>
-          }
+            <View style={styles.userInfo}>
+              <Text style={styles.username}>{userData.username}</Text>
+              {isEditingName ? (
+                <TextInput
+                  style={styles.editableText}
+                  value={editedName}
+                  onChangeText={setEditedName}
+                  onBlur={handleNameUpdate}
+                  autoFocus
+                />
+              ) : (
+                <Text
+                  style={styles.actualName}
+                  onPress={() => setIsEditingName(true)}
+                >
+                  {userData.name || "Edit Name"}
+                </Text>
+              )}
+              <Text style={styles.bioLabel}>Bio</Text>
+              {isEditingBio ? (
+                <TextInput
+                  style={styles.editableText}
+                  value={editedBio}
+                  onChangeText={setEditedBio}
+                  onBlur={handleBioUpdate}
+                  autoFocus
+                />
+              ) : (
+                <Text style={styles.bio} onPress={() => setIsEditingBio(true)}>
+                  {userData.bio}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Tabs */}
+          <View style={styles.tabContainer}>
+            <TouchableOpacity
+              style={[styles.tab, selectedTab === "Posts" && styles.activeTab]}
+              onPress={() => setSelectedTab("Posts")}
+            >
+              <Text style={styles.tabText}>Posts</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, selectedTab === "Comments" && styles.activeTab]}
+              onPress={() => setSelectedTab("Comments")}
+            >
+              <Text style={styles.tabText}>Comments</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+
+      {selectedTab === "Posts" && (
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item._id}
+          renderItem={renderPost}
+          ListEmptyComponent={
+            <Text style={styles.noPostsText}>No posts available.</Text>
+          }
+          contentContainerStyle={{
+            ...styles.contentContainer,
+            flexGrow: 1,
+          }}
+          keyboardShouldPersistTaps="handled"
+        />
+      )}
+      {selectedTab === "Comments" && (
+        <FlatList
+          data={comments}
+          keyExtractor={(item) => item._id}
+          renderItem={renderComment}
+          ListEmptyComponent={
+            <Text style={styles.noCommentsText}>No comments available.</Text>
+          }
+          contentContainerStyle={{
+            ...styles.contentContainer,
+          }}
+          keyboardShouldPersistTaps="handled"
+        />
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: "#f8f8f8",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 20,
-    backgroundColor: '#fff',
-    elevation: 1, 
+    backgroundColor: "#fff",
+    elevation: 1,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: "#ddd",
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   userInfoContainer: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: "#ddd",
   },
   profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 16,
   },
   profilePicture: {
@@ -457,75 +470,75 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     marginLeft: 80,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   stat: {
     marginBottom: 5,
   },
   statValue: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   statLabel: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
   },
   userInfo: {
     marginTop: 10,
-   },
+  },
   username: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   editableText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   actualName: {
     fontSize: 16,
-    color: '#555',
+    color: "#555",
     marginVertical: 5,
   },
   bioLabel: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginTop: 10,
     marginBottom: 2,
   },
   bio: {
     fontSize: 14,
-    color: '#777',
+    color: "#777",
   },
   tabContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: 4,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: "#ddd",
   },
   tab: {
     flex: 1,
     padding: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   activeTab: {
     borderBottomWidth: 3,
-    borderColor: '#000',
+    borderColor: "#000",
   },
   tabText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   noPostsText: {
-    textAlign: 'center',
-    color: '#888',
+    textAlign: "center",
+    color: "#888",
     marginTop: 20,
   },
   postCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 8,
     marginBottom: 8,
@@ -536,32 +549,32 @@ const styles = StyleSheet.create({
   },
   postTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   postImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 8,
     marginVertical: 8,
   },
   postContent: {
     fontSize: 16,
-    color: '#555',
+    color: "#555",
   },
   postActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
   },
   actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   actionText: {
     marginLeft: 5,
   },
   commentCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 8,
     marginBottom: 8,
@@ -572,23 +585,23 @@ const styles = StyleSheet.create({
   },
   commentTime: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
   },
   commentText: {
     fontSize: 16,
     marginVertical: 8,
   },
   commentActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   noCommentsText: {
-    textAlign: 'center',
-    color: '#888',
+    textAlign: "center",
+    color: "#888",
     marginTop: 20,
   },
   contentContainer: {
-    flexGrow: 1,
+    // flexGrow: 1,
   },
 });
 export default ProfileScreen;

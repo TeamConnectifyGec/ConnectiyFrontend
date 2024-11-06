@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import axios from 'axios';
-import UserComponent from '../../components/UserLableComponent';
+import ConnectionsComponent from '../../components/ConnectionsComponent';
 import { getToken } from '../../utils/tokenStorage';
 
 const ConnectionsPage = () => {
@@ -26,22 +26,22 @@ const ConnectionsPage = () => {
           },
         };
     
-        const response = await axios.get('https://connectify-backend-cseven.vercel.app/api/user/connections/all', config);
-    
+        const response = await axios.get('https://connectify-backend-seven.vercel.app/api/user/connections/all', config);
+     
         if (!response) {
           console.log("No response received from server");
           return;
         }
     
-        setConnections(response.data);
-        console.log(response.data);
+        setConnections(response.data.connections);
+        console.log(response.data.connections);
       } catch (error) {
         console.error("Error fetching connections:", error.message || error);
       }
     };
     
     const renderItem = ({ item }) => (
-        <UserComponent user={item} />
+        <ConnectionsComponent user={item} />
     );
 
     return (

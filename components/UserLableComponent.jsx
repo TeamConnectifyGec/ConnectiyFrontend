@@ -1,10 +1,26 @@
 import React from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import axios from 'axios';
+import {getToken} from '../utils/tokenStorage'; // Adjust the import based on your project structure
 
 const UserComponent = ({ user }) => {
-    const handleFollowPress = () => {
-        // Handle follow button press
-        console.log('Follow button pressed');
+    const handleFollowPress = async () => {
+        const token = await getToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        const config = {
+            headers: { Authorization: `Bearer ${token}` },
+        };
+
+        try {
+            const response = await axios.post('https://connectify-backend-seven.vercel.app/api/user/connections/add', { user2: user._id }, config);
+            console.log('Follow response:', response.data);
+        } catch (error) {
+            console.error('Error following user:', error);
+        }
     };
 
     return (
@@ -46,7 +62,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
         flex: 1,
-        marginLeft:8,
+        marginLeft: 8,
     },
     followButton: {
         backgroundColor: '#A98CE6',
